@@ -1,0 +1,8 @@
+/logs
+/artifacts
+.vscode
+/vault/main.yml
+/context
+/vault/vault_pass.txt
+ansible-navigator.log
+/playbooks/localhost.yml

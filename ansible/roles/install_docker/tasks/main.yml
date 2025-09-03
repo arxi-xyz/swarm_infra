@@ -1,0 +1,89 @@
+---
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Uninstall All confilicting packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ docker_packages }}"
+
+- name: Install necessary packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - curl
+    - ca-certificates
+  notify: Update apt cache
+
+- name: Create directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download GPG key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: a+r
+
+- name: Get system architecture
+  ansible.builtin.command: dpkg --print-architecture
+  register: arch
+  changed_when: false
+
+- name: Get Debian version codename
+  ansible.builtin.shell: . /etc/os-release && echo "$VERSION_CODENAME"
+  register: codename
+  changed_when: false
+
+- name: Add Docker APT repository
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/docker.list
+    line: "deb [arch={{ arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ codename.stdout }} stable"
+    create: true
+    mode: '0644'
+  notify: Update apt cache
+
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install docker
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ docker_packages }}"
+
+- name: Create docker group
+  ansible.builtin.group:
+    name: docker
+    state: present
+  become: true
+
+- name: Add current user to docker group
+  ansible.builtin.user:
+    name: "vm"
+    groups: docker
+    append: yes
+
+- name: Inform user to log out and log back in
+  ansible.builtin.debug:
+    msg: "User has been added to the docker group. Please log out and log back in to apply the changes."
+  become: true
+
+- name: Ensure Docker is installed and running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Test Docker via Hello-world
+  community.docker.docker_container:  
+    name: hello-test
+    image: hello-world
+    auto_remove: true
+    detach: false

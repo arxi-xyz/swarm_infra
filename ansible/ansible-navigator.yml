@@ -1,0 +1,21 @@
+ansible-navigator:
+  ansible:
+    inventory:
+      entries:
+        - ./inventories
+  execution-environment:
+    container-engine: docker
+    image: my_ansible_ee
+    pull:
+      policy: missing
+  logging:
+    level: info
+    append: false
+    file: ./logs/ansible-navigator.log
+  playbook-artifact:
+    save-as: ./artifacts/{playbook_name}-artifact.json
+    enable: true
+  mode: stdout
+  editor:
+    command: code -w
+    console: false
