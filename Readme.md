@@ -1,4 +1,4 @@
-# Infra-as-code sample project
+# Swarm Infra
 Nothing to say right now.
 
 ## Table of Contents
