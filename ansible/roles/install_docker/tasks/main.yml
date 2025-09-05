@@ -16,6 +16,8 @@
   loop:
     - curl
     - ca-certificates
+    - python3-pip
+    - python3-docker
   notify: Update apt cache
 
 - name: Create directory
@@ -69,6 +71,7 @@
     name: "vm"
     groups: docker
     append: yes
+  become_method: sudo
 
 - name: Inform user to log out and log back in
   ansible.builtin.debug:

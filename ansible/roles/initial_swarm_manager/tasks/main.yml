@@ -1,0 +1,33 @@
+---
+- name: Install pip for Python3
+  ansible.builtin.apt:
+    name: python3-pip
+    state: present
+    update_cache: yes
+  when: swarm_leader_node | default(false)
+
+- name: Install python3-docker via apt
+  ansible.builtin.apt:
+    name: python3-docker
+    state: present
+    update_cache: yes
+    
+- name: Initialize Docker Swarm if not already initialized
+  community.docker.docker_swarm:
+    state: present
+    advertise_addr: swarm_remote_addr
+  when: swarm_leader_node | default(false)
+  register: swarm_result
+
+- name: Get Docker Swarm info
+  community.docker.docker_swarm_info:
+  when: swarm_leader_node | default(false)
+  register: swarm_info
+
+- name: Join Managers nodes
+  community.docker.docker_swarm:
+    state: join
+    advertise_addr: "{{ swarm_remote_addr }}"
+    join_token: "{{ hostvars[groups['swarm'][0]].swarm_info.swarm_facts.JoinTokens.Manager }}"
+    remote_addrs: "{{ hostvars[groups['swarm'][0]].swarm_remote_addr }}"
+  when: "{{ not (swarm_leader_node | default(false)) }}"

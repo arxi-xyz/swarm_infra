@@ -19,6 +19,18 @@ docker_packages:
   - docker-compose-plugin  
 ```
 
+
+Example Playbook
+----------------
+
+Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+
+- name: Install Docker on vm
+  become: true
+  hosts: swarm
+  roles:
+    - install_docker
+
 License
 -------
 

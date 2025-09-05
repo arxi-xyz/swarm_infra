@@ -1,20 +1,59 @@
-all: 
+all:
   children:
-    docker_swarm:
+    swarm:
       children:
         manager:
           hosts:
-            swarm_manager:
-              ansible_host: 10.103.45.150
+            manager_1:
+              ansible_host: 192.168.56.2
               ansible_user: vm
               ansible_become_pass: password
-        worker:
-          hosts:
-            worker_1:
-              ansible_host: 10.103.45.149
-              ansible_user: vm
-              ansible_become_pass: password           
-            worker_2:
-              ansible_host: 10.103.45.148
+              swarm_leader_node: true
+              swarm_remote_addr: 192.168.56.2
+            manager_2:
+              ansible_host: 192.168.56.3
               ansible_user: vm
               ansible_become_pass: password
+              swarm_remote_addr: 192.168.56.3
+            manager_3:
+              ansible_host: 192.168.56.4
+              ansible_user: vm
+              ansible_become_pass: password
+              swarm_remote_addr: 192.168.56.4
+        workers:
+          children:
+            monitoring:
+              hosts:
+                worker_4:
+                  ansible_host: 192.168.56.8
+                  ansible_user: vm
+                  ansible_become_pass: password
+            database:
+              hosts:
+                worker_3:
+                  ansible_host: 192.168.56.7
+                  ansible_user: vm
+                  ansible_become_pass: password
+            backend:
+              hosts:
+                worker_2:
+                  ansible_host: 192.168.56.6
+                  ansible_user: vm
+                  ansible_become_pass: password
+                worker_5:
+                  ansible_host: 192.168.56.9
+                  ansible_user: vm
+                  ansible_become_pass: password
+            gateway:
+              hosts:
+                worker_1:
+                  ansible_host: 192.168.56.5
+                  ansible_user: vm
+                  ansible_become_pass: password
+            frontend:
+              hosts:
+                worker_1:
+                  ansible_host: 192.168.56.5
+                  ansible_user: vm
+                  ansible_become_pass: password
+          
