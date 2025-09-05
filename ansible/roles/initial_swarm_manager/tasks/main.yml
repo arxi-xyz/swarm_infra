@@ -11,7 +11,7 @@
     name: python3-docker
     state: present
     update_cache: yes
-    
+
 - name: Initialize Docker Swarm if not already initialized
   community.docker.docker_swarm:
     state: present
@@ -24,10 +24,17 @@
   when: swarm_leader_node | default(false)
   register: swarm_info
 
+- name: Save manager and worker join tokens as host facts
+  set_fact:
+    swarm_manager_token: "{{ swarm_info.swarm_facts.JoinTokens.Manager }}"
+    swarm_worker_token: "{{ swarm_info.swarm_facts.JoinTokens.Worker }}"
+  delegate_to: "{{ inventory_hostname }}"
+  when: swarm_leader_node | default(false)
+
 - name: Join Managers nodes
   community.docker.docker_swarm:
     state: join
     advertise_addr: "{{ swarm_remote_addr }}"
     join_token: "{{ hostvars[groups['swarm'][0]].swarm_info.swarm_facts.JoinTokens.Manager }}"
     remote_addrs: "{{ hostvars[groups['swarm'][0]].swarm_remote_addr }}"
-  when: "{{ not (swarm_leader_node | default(false)) }}"
+  when: not (swarm_leader_node | default(false))

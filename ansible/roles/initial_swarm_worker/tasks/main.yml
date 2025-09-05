@@ -1,2 +1,24 @@
 ---
-# tasks file for swarm_worker
+
+- name: Install necessary packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - curl
+    - ca-certificates
+    - python3-pip
+    - python3-docker
+
+- name: Get worker join token from leader
+  community.docker.docker_swarm_info:
+  register: leader_swarm_info
+  delegate_to: "{{ groups['manager'][0] }}"
+  run_once: true
+
+- name: Join worker to swarm
+  community.docker.docker_swarm:
+    state: join
+    advertise_addr: "{{ swarm_remote_addr }}"
+    join_token: "{{ leader_swarm_info.swarm_facts.JoinTokens.Worker }}"
+    remote_addrs: ["{{ hostvars[groups['manager'][0]].swarm_remote_addr }}"]

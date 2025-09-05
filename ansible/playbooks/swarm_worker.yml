@@ -1,7 +1,7 @@
 ---
 - name: Install Docker and initial swarm managers
   become: true
-  hosts: manager
+  hosts: worker
   roles:
     # - install_docker
-    - initial_swarm_manager
+    - initial_swarm_worker
